@@ -45,6 +45,7 @@ Route::get('/admin/report/','AdminController@report')->name('admin-reports');
 Route::get('/admin/report/salarySlip/{id}/{month}/{year}','AdminController@salarySlip')->name('admin-salaryslip');
 //epfReport
 Route::get('/admin/report/epfReport/{month}/{year}','AdminController@epfReport')->name('admin-epfreport');
+Route::get('/admin/report/etfReport/{month}/{year}','AdminController@etfReport')->name('admin-etfreport');
 /*Route::group(['middleware'=>['auth']],function(){
 });*/
 Route::post('/admin/payroll','PayrollController@store');

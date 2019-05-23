@@ -240,21 +240,38 @@ class AdminController extends Controller
 return $html;
 
     }
-public function epfReport(Request $request,$month,$year)
+
+
+ public function epfReport(Request $request,$month,$year)
     {
       $response['data'] = payroll::select('*')
                         ->join('employees','employees.id' ,'=','payrolls.employee_id')
                         ->whereYear('payrolls.created_at', '=', $year)
                         ->whereMonth('payrolls.created_at', '=', $month)
-                        ->first();
+                        ->get();
         $response['month'] = $month;
         $response['year'] = $year;
+        $html2 = '';
+        foreach($response['data'] as $pr){
+            $x_value = ((double)$pr->emp_epf + (double)$pr->cmp_epf);
+            // dd($x);
+
+            $html2 = $html2 .'<tr>
+            <td><h6><small>#EPF-'.$pr->emp->id.'</small></h6></td>
+          <td><h6><small>'.$pr->emp->full_name.'</small></h6></td>
+          <td><h6><small>'.$pr->salary_for_epf.'</small></h6></td>
+          <td><h6><small>'.$pr->emp_epf.'</small></h6></td>
+          <td><h6><small>'.$pr->cmp_epf.'</small></h6></td>
+          <td><h6><small>'.$x_value.'</small></h6></td>
+       </tr>';
+
+        }
 
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHtml($this->generate2( $response['data'],$response['month'],$year));
+        $pdf->loadHtml($this->generate2( $response['data'],$response['month'],$year,$html2));
        return $pdf->stream();
     }
-    public function generate2($data,$month,$year)
+    public function generate2($data,$month,$year,$html2)
     {
 
         $html = '
@@ -264,7 +281,7 @@ public function epfReport(Request $request,$month,$year)
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>'.$month.'/'.$year.'&apos;s Salary Sllip</title>
+        <title>'.$month.'/'.$year.' EPF Report</title>
 
         <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -297,32 +314,30 @@ public function epfReport(Request $request,$month,$year)
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Epf No</th>
-                            <th>Name of the Employee</th>
-                            <th>Salary for EPF</th>
-                            <th>EPF(8%)</th>
-                            <th>EPF(12%)</th>
-                            <th>Total EPF</th>
+                            <th><h6><small><strong>Epf No</strong></small></h6></th>
+                            <th><h6><small><strong>Name of the Employee</strong></small></h6></th>
+                            <th><h6><small><strong>Salary for EPF</strong></small></h6></th>
+                            <th><h6><small><strong>EPF(8%)</strong></small></h6></th>
+                            <th><h6><small><strong>EPF(12%)</strong></small></h6></th>
+                            <th><h6><small><strong>Total EPF</strong></small></h6></th>
 
                         </tr>
                     </thead>
                     <tbody>
-                         @foreach ($payrols as $pr)
-                            <tr>
-                                  <td>#EPF-{{$pr->emp->id}}</td>
-                                <td>'.$pr->emp->full_name.'</td>
-                                <td>'.$pr->salary_for_epf.'</td>
-                                <td>'.$pr->emp_epf.'</td>
-                                <td>'.$pr->cmp_epf.'</td>
-                                <td>.'($pr->emp_epf + $pr->cmp_epf).'</td>
-                             </tr>
-                             @endforeach
+                         '.$html2.'
 
                     </tbody>
                 </table>
 
             </div>
+            <div class="row">
+                <div class="col-lg-6">
 
+                    <h6 class="text-left"><small>Date :</small></h6>
+                    <h6 class="text-left"><small>Director Signature :</small></h6>
+                </div>
+
+            </div>
         </div>
 
     </body>
@@ -334,6 +349,107 @@ public function epfReport(Request $request,$month,$year)
 return $html;
 
     }
+
+
+
+
+ public function etfReport(Request $request,$month,$year)
+ {
+   $response['data'] = payroll::select('*')
+                     ->join('employees','employees.id' ,'=','payrolls.employee_id')
+                     ->whereYear('payrolls.created_at', '=', $year)
+                     ->whereMonth('payrolls.created_at', '=', $month)
+                     ->get();
+     $response['month'] = $month;
+     $response['year'] = $year;
+     $html2 = '';
+     foreach($response['data'] as $pr){
+         $html2 = $html2 .'<tr>
+         <td><h6><small>#EPF-'.$pr->emp->id.'</small></h6></td>
+       <td><h6><small>'.$pr->emp->full_name.'</small></h6></td>
+       <td><h6><small>'.$pr->cmp_etf.'</small></h6></td>
+    </tr>';
+
+     }
+
+     $pdf = \App::make('dompdf.wrapper');
+     $pdf->loadHtml($this->generate3( $response['data'],$response['month'],$year,$html2));
+    return $pdf->stream();
+ }
+ public function generate3($data,$month,$year,$html2)
+ {
+
+     $html = '
+<!DOCTYPE html>
+<html lang="">
+ <head>
+     <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <title>'.$month.'/'.$year.' ETF Report</title>
+
+     <!-- Bootstrap CSS -->
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+
+ </head>
+ <body>
+     <div class="container">
+         <div class="row">
+
+             <div class=" col-lg-12  text-align:center">
+                 <h1 style="text-align: center; color:red" >Softline Technologies</h1>
+                 <h6 style="text-align: center;-"><small>No.237/82, Level 01, Vijaya Kumarathunga Mawatha, Colombo 05</small></h6>
+                 <h5 style="text-align: center;">-- Employee EPF Report --</h5>
+             </div>
+         </div>
+
+
+         <div class="row">
+             <div class="col-lg-12">
+                 <h6 class="text-left"><small><strong>Month & Year : </strong>'.$month.'/'.$year.'</small></h6>
+             </div>
+         </div>
+
+         <div class="row">
+             <div></div>
+             <table class="table table-bordered">
+                 <thead>
+                     <tr>
+                         <th><h6><small><strong>Epf No</strong></small></h6></th>
+                         <th><h6><small><strong>Name of the Employee</strong></small></h6></th>
+=                        <th><h6><small><strong>ETF(3%)</strong></small></h6></th>
+
+                     </tr>
+                 </thead>
+                 <tbody>
+                      '.$html2.'
+
+                 </tbody>
+             </table>
+
+         </div>
+         <div class="row">
+                <div class="col-lg-6">
+                    <h6 class="text-left"><small>Date :</small></h6>
+                    <h6 class="text-left"><small>Director Signature :</small></h6>
+                </div>
+        </div>
+
+     </div>
+
+ </body>
+</html>
+
+
+
+     ';
+return $html;
+
+ }
 
 
 public function logout()
